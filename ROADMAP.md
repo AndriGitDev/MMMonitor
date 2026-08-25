@@ -66,7 +66,7 @@ Apple does not expose every M-series sensor through stable public APIs. Experime
 - [x] exclude local build products from source control
 - [x] initialize and review the Git history
 - [x] create the public GitHub repository
-- [ ] publish a checksummed release archive
+- [x] publish a checksummed release archive
 - [x] gather hardware reports through a structured issue template
 
 App Store distribution remains intentionally out of scope. Notarized GitHub builds and a Homebrew Cask can be considered after the release process stabilizes.
