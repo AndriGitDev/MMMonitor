@@ -1,0 +1,60 @@
+name: Hardware compatibility report
+description: Report metrics that are missing or incorrect on an Apple Silicon Mac
+title: "[Hardware] "
+labels:
+  - hardware
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping MMMonitor work across M-series Macs. Please remove serial numbers, usernames, paths, and identifying process names.
+  - type: input
+    id: model
+    attributes:
+      label: Mac model and chip
+      placeholder: 14-inch MacBook Pro, M3 Pro
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: macOS 15.6
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: MMMonitor version or commit
+      placeholder: 0.3.0
+    validations:
+      required: true
+  - type: dropdown
+    id: metric
+    attributes:
+      label: Affected metric
+      options:
+        - CPU
+        - Memory or swap
+        - Disk or mounted volume
+        - Network
+        - Battery
+        - Processes
+        - Thermal or system
+        - Menu bar
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: What did you observe?
+      description: Include steps and the expected value. Review any pasted snapshot before submitting it.
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: I reviewed this report and removed private or identifying system information.
+          required: true
