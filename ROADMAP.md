@@ -64,8 +64,8 @@ Apple does not expose every M-series sensor through stable public APIs. Experime
 - [x] add contributor and security guidance
 - [x] document data sources, permissions, and sampling cadence for IT review
 - [x] exclude local build products from source control
-- [ ] initialize and review the Git history
-- [ ] create the public GitHub repository
+- [x] initialize and review the Git history
+- [x] create the public GitHub repository
 - [ ] publish a checksummed release archive
 - [x] gather hardware reports through a structured issue template
 

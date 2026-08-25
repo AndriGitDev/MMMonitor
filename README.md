@@ -54,7 +54,7 @@ cd ~/MMMonitor
 open dist/MMMonitor.app
 ```
 
-The release build is ad-hoc signed and targets `arm64`. GitHub releases can eventually provide the same `.app` inside a downloadable archive. Users may need to approve locally downloaded, non-notarized applications according to their macOS or workplace security policy.
+The release build is ad-hoc signed and targets `arm64`. GitHub releases provide the same `.app` inside a downloadable archive. Users may need to approve locally downloaded, non-notarized applications according to their macOS or workplace security policy.
 
 ## Install from a GitHub release
 
@@ -108,7 +108,7 @@ Create a versioned zip and checksum locally with:
 ./scripts/package-release.sh
 ```
 
-The included GitHub Actions workflow performs the same release build and verification without publishing it. Repository and release publication remain deliberate manual steps.
+The included GitHub Actions workflow performs the same release build and verification without publishing it. Release publication remains a deliberate manual step.
 
 To verify a downloaded release, place the zip beside its `.sha256` file and run:
 

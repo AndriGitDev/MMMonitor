@@ -2,11 +2,11 @@
 
 ## Supported versions
 
-Until the first public release, security fixes are applied to the latest source and local release only.
+Security fixes are applied to the latest source and the current GitHub release. Older releases are not supported.
 
 ## Reporting a vulnerability
 
-Please use GitHub's private vulnerability reporting feature once the public repository is available. Do not open a public issue for a vulnerability that could expose local data, execute code, or bypass macOS protections.
+Please use GitHub's private vulnerability reporting feature. Do not open a public issue for a vulnerability that could expose local data, execute code, or bypass macOS protections.
 
 For ordinary non-sensitive bugs, use the repository issue tracker and omit personal paths, process names, exported snapshots, or other identifying system details unless they are essential and have been reviewed first.
 
