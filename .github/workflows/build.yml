@@ -12,13 +12,13 @@ jobs:
   apple-silicon-release:
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Build release archive
         run: ./scripts/package-release.sh
 
       - name: Upload app and checksum
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: MMMonitor-arm64
           path: |
