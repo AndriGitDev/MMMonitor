@@ -25,6 +25,15 @@ MMMonitor is moving faster than the original estimate: the native foundation and
 - [x] standalone settings window isolated from live dashboard redraws
 - [x] keyboard access to settings and expanded VoiceOver summaries
 
+## Shipped locally — 0.5
+
+- [x] integrated MacQueen's Keep Awake controls into the existing dashboard
+- [x] 30-minute, one-, two-, four-, eight-hour, and indefinite sessions
+- [x] Mac-only and Mac-plus-display awake modes
+- [x] active-session countdown in the existing MMMonitor menu-bar item
+- [x] mode switching without losing the session end time
+- [x] automatic stop and power-assertion cleanup on expiry, manual stop, and app termination
+
 ## Next focused session — roughly 1–2 hours
 
 - [x] choose and inspect individual network interfaces

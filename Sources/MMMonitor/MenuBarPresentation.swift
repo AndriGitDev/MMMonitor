@@ -78,6 +78,7 @@ enum MenuBarPresentation {
 struct MenuBarLabel: View {
     @ObservedObject var monitor: SystemMonitor
     @ObservedObject var settings: AppSettings
+    @ObservedObject var awakeSessionController: AwakeSessionController
 
     private var metricText: some View {
         Text(MenuBarPresentation.text(
@@ -94,6 +95,13 @@ struct MenuBarLabel: View {
     @ViewBuilder
     var body: some View {
         HStack(spacing: 4) {
+            if awakeSessionController.isActive {
+                Label(awakeSessionController.remainingText, systemImage: "cup.and.saucer.fill")
+                    .font(.system(size: 12, design: .monospaced))
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+            }
             if settings.menuBarShowsGraph {
                 MenuBarSparkline(values: monitor.cpuHistory)
             }
@@ -108,11 +116,14 @@ struct MenuBarLabel: View {
     }
 
     private var accessibilityText: String {
-        MenuBarPresentation.accessibilityText(
+        let metrics = MenuBarPresentation.accessibilityText(
             snapshot: monitor.snapshot,
             components: settings.menuBarComponents,
             order: settings.menuBarComponentOrder
         )
+        guard awakeSessionController.isActive else { return metrics }
+        return "MMMonitor, Keep Awake active, \(awakeSessionController.remainingText), " +
+            metrics.replacingOccurrences(of: "MMMonitor, ", with: "")
     }
 }
 
