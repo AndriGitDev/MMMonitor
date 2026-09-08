@@ -49,6 +49,8 @@ struct BatterySnapshot: Equatable, Codable, Sendable {
     let timeRemaining: TimeInterval?
     let cycleCount: Int?
     let healthPercentage: Double?
+    let designCapacityMilliampHours: Int?
+    let fullChargeCapacityMilliampHours: Int?
 
     static let unavailable = BatterySnapshot(
         isPresent: false,
@@ -57,7 +59,9 @@ struct BatterySnapshot: Equatable, Codable, Sendable {
         isOnACPower: false,
         timeRemaining: nil,
         cycleCount: nil,
-        healthPercentage: nil
+        healthPercentage: nil,
+        designCapacityMilliampHours: nil,
+        fullChargeCapacityMilliampHours: nil
     )
 }
 

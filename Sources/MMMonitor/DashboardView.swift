@@ -488,6 +488,13 @@ private struct BatteryCard: View {
         return "Using battery power"
     }
 
+    private var hasHardwareDetails: Bool {
+        battery.cycleCount != nil
+            || battery.healthPercentage != nil
+            || battery.designCapacityMilliampHours != nil
+            || battery.fullChargeCapacityMilliampHours != nil
+    }
+
     var body: some View {
         VStack(spacing: 10) {
             HStack {
@@ -510,15 +517,38 @@ private struct BatteryCard: View {
                 Spacer()
             }
 
-            if battery.cycleCount != nil || battery.healthPercentage != nil {
+            if hasHardwareDetails {
                 Divider()
-                HStack {
-                    if let health = battery.healthPercentage {
-                        Label("\(MetricFormatting.percentage(health)) health", systemImage: "heart.text.square")
+
+                VStack(spacing: 6) {
+                    if battery.cycleCount != nil || battery.healthPercentage != nil {
+                        HStack {
+                            if let health = battery.healthPercentage {
+                                Label("\(MetricFormatting.percentage(health)) health", systemImage: "heart.text.square")
+                            }
+                            Spacer()
+                            if let cycles = battery.cycleCount {
+                                Text("\(cycles) cycles")
+                            }
+                        }
                     }
-                    Spacer()
-                    if let cycles = battery.cycleCount {
-                        Text("\(cycles) cycles")
+
+                    if let capacity = battery.fullChargeCapacityMilliampHours {
+                        HStack {
+                            Text("Full charge capacity")
+                            Spacer()
+                            Text(MetricFormatting.milliampHours(capacity))
+                                .monospacedDigit()
+                        }
+                    }
+
+                    if let capacity = battery.designCapacityMilliampHours {
+                        HStack {
+                            Text("Design capacity")
+                            Spacer()
+                            Text(MetricFormatting.milliampHours(capacity))
+                                .monospacedDigit()
+                        }
                     }
                 }
                 .font(.caption)

@@ -20,7 +20,7 @@ For deployment or security review, see [Architecture and IT Review](docs/ARCHITE
 - selectable per-interface network throughput
 - one-click DNS cache flushing from the Network card
 - used and total capacity for mounted local volumes
-- battery percentage, charging state, health, cycle count, and estimated remaining time
+- battery percentage, charging state, health, cycle count, design and full-charge capacity, and estimated remaining time
 - top CPU processes with resident-memory use
 - thermal state, system uptime, and load averages
 - glanceable multi-metric menu-bar readout for CPU, memory, disk, network, battery, and thermal state

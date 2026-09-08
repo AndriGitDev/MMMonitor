@@ -28,6 +28,10 @@ enum MetricFormatting {
         bytes.string(fromByteCount: Int64(clamping: value))
     }
 
+    static func milliampHours(_ value: Int) -> String {
+        "\(value.formatted()) mAh"
+    }
+
     static func bytesPerSecond(_ value: Double) -> String {
         "\(rate.string(fromByteCount: Int64(max(0, value))))/s"
     }

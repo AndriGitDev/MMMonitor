@@ -49,7 +49,7 @@ MMMonitor is moving faster than the original estimate: the native foundation and
 
 - [ ] process detail view with threads and energy impact where available
 - [ ] efficiency/performance core grouping
-- [ ] battery design and full-charge capacity details
+- [x] battery design and full-charge capacity details
 - [ ] GPU activity and memory use
 - [ ] CPU/GPU power and frequency
 - [ ] available temperature sensors

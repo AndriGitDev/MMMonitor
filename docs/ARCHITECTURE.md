@@ -22,7 +22,7 @@ Monitoring data stays in the MMMonitor process. It is not transmitted and is not
 | Network throughput | Darwin `getifaddrs` interface byte counters |
 | Disk capacity and mounted volumes | Foundation file and volume resource values |
 | Battery and charge state | IOKit power-source APIs |
-| Battery health and cycles | read-only IOKit registry properties |
+| Battery health, cycles, and capacity | read-only IOKit registry properties |
 | Top processes | read-only `libproc` task summaries |
 | Thermal state and uptime | Foundation `ProcessInfo` |
 | Load averages | Darwin `getloadavg` |

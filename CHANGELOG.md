@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- added battery design and full-charge capacity details where available
+
 ## 0.3.1 — 2026-09-08
 
 - added a one-click DNS cache flush action to the Network card
