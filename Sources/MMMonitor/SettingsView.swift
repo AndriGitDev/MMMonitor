@@ -108,6 +108,7 @@ struct SettingsView: View {
 
 private struct GeneralSettingsTab: View {
     @ObservedObject var settings: AppSettings
+    @State private var isConfirmingHistoryClear = false
 
     var body: some View {
         Form {
@@ -117,16 +118,37 @@ private struct GeneralSettingsTab: View {
                     Text("2 seconds").tag(2.0)
                     Text("5 seconds").tag(5.0)
                 }
-                Picker("Live history", selection: $settings.historyRange) {
-                    ForEach(HistoryRange.allCases) { range in
-                        Text(range.title.capitalized).tag(range)
-                    }
-                }
                 Picker("Dashboard density", selection: $settings.dashboardDensity) {
                     ForEach(DashboardDensity.allCases) { density in
                         Text(density.title).tag(density)
                     }
                 }
+            }
+
+            Section("History") {
+                Picker("Graph range", selection: $settings.historyRange) {
+                    ForEach(HistoryRange.allCases) { range in
+                        Text(range.title.capitalized).tag(range)
+                    }
+                }
+
+                Toggle(
+                    "Preserve 24-hour history between launches",
+                    isOn: $settings.persistedHistoryEnabled
+                )
+
+                HStack {
+                    Text(historyStatus)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button("Clear History", role: .destructive) {
+                        isConfirmingHistoryClear = true
+                    }
+                }
+
+                Text("While MMMonitor is running, one-minute averages are retained for at most 24 hours. Disabling persistence stops future disk writes; Clear History removes saved data.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
 
             Section("Startup") {
@@ -142,6 +164,21 @@ private struct GeneralSettingsTab: View {
             }
         }
         .formStyle(.grouped)
+        .confirmationDialog(
+            "Clear saved history?",
+            isPresented: $isConfirmingHistoryClear,
+            titleVisibility: .visible
+        ) {
+            Button("Clear History", role: .destructive) { settings.clearHistory() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This removes all saved minute averages and cannot be undone.")
+        }
+    }
+
+    private var historyStatus: String {
+        let count = settings.oneDayHistorySampleCount
+        return count == 1 ? "1 minute sample available" : "\(count) minute samples available"
     }
 }
 

@@ -41,7 +41,7 @@ MMMonitor is moving faster than the original estimate: the native foundation and
 - [x] notification cooldowns
 - [x] configurable notification quiet hours
 - [x] selectable one-hour in-memory history
-- [ ] optional persisted one-day history with an explicit clear action
+- [x] optional persisted one-day history with an explicit clear action
 - [x] rearrangeable modules
 - [x] export a point-in-time JSON report
 
@@ -49,7 +49,7 @@ MMMonitor is moving faster than the original estimate: the native foundation and
 
 - [ ] process detail view with threads and energy impact where available
 - [ ] efficiency/performance core grouping
-- [ ] battery design and full-charge capacity details
+- [x] battery design and full-charge capacity details
 - [ ] GPU activity and memory use
 - [ ] CPU/GPU power and frequency
 - [ ] available temperature sensors

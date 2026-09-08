@@ -305,7 +305,9 @@ final class SystemSampler {
             isOnACPower: powerState == kIOPSACPowerValue,
             timeRemaining: timeToEmpty > 0 ? timeToEmpty * 60 : nil,
             cycleCount: health.cycleCount,
-            healthPercentage: health.percentage
+            healthPercentage: health.percentage,
+            designCapacityMilliampHours: health.designCapacityMilliampHours,
+            fullChargeCapacityMilliampHours: health.fullChargeCapacityMilliampHours
         )
     }
 
@@ -318,12 +320,17 @@ final class SystemSampler {
         return cachedBattery
     }
 
-    private func sampleBatteryHealth() -> (cycleCount: Int?, percentage: Double?) {
+    private func sampleBatteryHealth() -> (
+        cycleCount: Int?,
+        percentage: Double?,
+        designCapacityMilliampHours: Int?,
+        fullChargeCapacityMilliampHours: Int?
+    ) {
         let service = IOServiceGetMatchingService(
             kIOMainPortDefault,
             IOServiceMatching("AppleSmartBattery")
         )
-        guard service != IO_OBJECT_NULL else { return (nil, nil) }
+        guard service != IO_OBJECT_NULL else { return (nil, nil, nil, nil) }
         defer { IOObjectRelease(service) }
 
         var unmanagedProperties: Unmanaged<CFMutableDictionary>?
@@ -335,7 +342,7 @@ final class SystemSampler {
         )
         guard result == KERN_SUCCESS,
               let properties = unmanagedProperties?.takeRetainedValue() as? [String: Any] else {
-            return (nil, nil)
+            return (nil, nil, nil, nil)
         }
 
         func integer(_ key: String) -> Int? {
@@ -345,15 +352,16 @@ final class SystemSampler {
         }
 
         let cycles = integer("CycleCount")
-        let design = integer("DesignCapacity")
-        let maximum = integer("AppleRawMaxCapacity") ?? integer("NominalChargeCapacity")
+        let design = integer("DesignCapacity").flatMap { $0 > 0 ? $0 : nil }
+        let maximum = (integer("AppleRawMaxCapacity") ?? integer("NominalChargeCapacity"))
+            .flatMap { $0 > 0 ? $0 : nil }
         let percentage: Double?
         if let design, let maximum, design > 0 {
             percentage = min(1.2, max(0, Double(maximum) / Double(design)))
         } else {
             percentage = nil
         }
-        return (cycles, percentage)
+        return (cycles, percentage, design, maximum)
     }
 
     private func sampleProcesses(at now: Date) -> [ProcessSnapshot] {

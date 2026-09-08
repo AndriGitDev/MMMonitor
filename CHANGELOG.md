@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.0 — 2026-09-08
+
+- added battery design and full-charge capacity details where available
+- added optional persisted one-day history with minute-level aggregation and an explicit clear action
+
 ## 0.3.1 — 2026-09-08
 
 - added a one-click DNS cache flush action to the Network card

@@ -12,7 +12,7 @@ For deployment or security review, see [Architecture and IT Review](docs/ARCHITE
 
 ## Current features
 
-- overall CPU usage with selectable 1-, 15-, or 60-minute history
+- overall CPU usage with selectable 1-, 15-, 60-minute, or one-day history
 - per-core CPU activity bars
 - used and total memory with selectable live history
 - swap usage
@@ -20,7 +20,7 @@ For deployment or security review, see [Architecture and IT Review](docs/ARCHITE
 - selectable per-interface network throughput
 - one-click DNS cache flushing from the Network card
 - used and total capacity for mounted local volumes
-- battery percentage, charging state, health, cycle count, and estimated remaining time
+- battery percentage, charging state, health, cycle count, design and full-charge capacity, and estimated remaining time
 - top CPU processes with resident-memory use
 - thermal state, system uptime, and load averages
 - glanceable multi-metric menu-bar readout for CPU, memory, disk, network, battery, and thermal state
@@ -29,6 +29,7 @@ For deployment or security review, see [Architecture and IT Review](docs/ARCHITE
 - optional live CPU sparkline in the menu bar
 - independent settings window that remains interactive while monitoring updates
 - configurable one-, two-, or five-second sampling
+- optional persisted one-day history using bounded minute averages and an explicit clear action
 - individually hideable dashboard modules
 - rearrangeable dashboard modules
 - compact and comfortable dashboard density
@@ -114,12 +115,12 @@ The included GitHub Actions workflow performs the same release build and verific
 To verify a downloaded release, place the zip beside its `.sha256` file and run:
 
 ```sh
-shasum -a 256 -c MMMonitor-0.3.1-arm64.zip.sha256
+shasum -a 256 -c MMMonitor-0.4.0-arm64.zip.sha256
 ```
 
 ## Privacy
 
-MMMonitor reads aggregate statistics from local macOS system APIs. It does not transmit monitoring data or persist it automatically. Snapshot files are written only when the user explicitly exports one. The network module reads interface byte counters to calculate throughput; it does not inspect network traffic or destinations. When you click Flush DNS, MMMonitor asks macOS to run the fixed `/usr/bin/dscacheutil -flushcache` and `/usr/bin/killall -HUP mDNSResponder` commands with administrator privileges. No user input is inserted into that command and no helper remains installed or running.
+MMMonitor reads aggregate statistics from local macOS system APIs and does not transmit monitoring data. Live graph history stays in memory unless you enable Preserve 24-hour history; when enabled, MMMonitor stores at most 1,440 minute-average samples collected while it is running in Application Support and automatically drops data older than one day. The settings window provides an explicit Clear History action. Snapshot files are written only when the user explicitly exports one. The network module reads interface byte counters to calculate throughput; it does not inspect network traffic or destinations. When you click Flush DNS, MMMonitor asks macOS to run the fixed `/usr/bin/dscacheutil -flushcache` and `/usr/bin/killall -HUP mDNSResponder` commands with administrator privileges. No user input is inserted into that command and no helper remains installed or running.
 
 ## License
 

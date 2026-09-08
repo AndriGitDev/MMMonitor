@@ -188,7 +188,9 @@ enum DevelopmentScreenshotExporter {
                 isOnACPower: false,
                 timeRemaining: 5.4 * 3_600,
                 cycleCount: 126,
-                healthPercentage: 0.96
+                healthPercentage: 0.96,
+                designCapacityMilliampHours: 6_075,
+                fullChargeCapacityMilliampHours: 5_832
             ),
             topProcesses: [
                 ProcessSnapshot(pid: 421, name: "Xcode", cpuUsage: 0.18, memoryBytes: 1_900_000_000),
