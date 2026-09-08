@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.1 — 2026-09-08
 
 - added a one-click DNS cache flush action to the Network card
 - kept elevated access scoped to a fixed, user-initiated command with no persistent privileged helper
