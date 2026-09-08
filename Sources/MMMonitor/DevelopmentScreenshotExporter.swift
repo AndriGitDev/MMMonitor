@@ -44,6 +44,7 @@ enum DevelopmentScreenshotExporter {
         let dashboard = DashboardView(
             monitor: monitor,
             settings: settings,
+            dnsCacheController: DNSCacheController(),
             openSettings: {}
         )
         .environment(\.colorScheme, .dark)

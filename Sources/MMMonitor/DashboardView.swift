@@ -4,6 +4,7 @@ import SwiftUI
 struct DashboardView: View {
     @ObservedObject var monitor: SystemMonitor
     @ObservedObject var settings: AppSettings
+    @ObservedObject var dnsCacheController: DNSCacheController
     let openSettings: @MainActor () -> Void
 
     private let blue = Color(red: 0.20, green: 0.55, blue: 0.95)
@@ -31,6 +32,14 @@ struct DashboardView: View {
             height: settings.dashboardDensity == .compact ? 540 : 600
         )
         .background(Color(nsColor: .windowBackgroundColor))
+        .alert("Couldn’t Flush DNS Cache", isPresented: Binding(
+            get: { dnsCacheController.errorMessage != nil },
+            set: { if !$0 { dnsCacheController.errorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) { dnsCacheController.errorMessage = nil }
+        } message: {
+            Text(dnsCacheController.errorMessage ?? "An unknown error occurred.")
+        }
     }
 
     private var header: some View {
@@ -91,6 +100,7 @@ struct DashboardView: View {
                     uploadHistory: monitor.uploadHistory,
                     interfaceDownloadHistory: monitor.interfaceDownloadHistory,
                     interfaceUploadHistory: monitor.interfaceUploadHistory,
+                    dnsCacheController: dnsCacheController,
                     color: green
                 )
             case .disk:
@@ -304,6 +314,7 @@ private struct NetworkCard: View {
     let uploadHistory: [Double]
     let interfaceDownloadHistory: [String: [Double]]
     let interfaceUploadHistory: [String: [Double]]
+    @ObservedObject var dnsCacheController: DNSCacheController
     let color: Color
 
     private var selected: NetworkInterfaceSnapshot? {
@@ -326,6 +337,22 @@ private struct NetworkCard: View {
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(color)
                 Spacer()
+                Button(action: dnsCacheController.flush) {
+                    switch dnsCacheController.status {
+                    case .idle:
+                        Label("Flush DNS", systemImage: "arrow.clockwise")
+                    case .flushing:
+                        HStack(spacing: 4) {
+                            ProgressView().controlSize(.mini)
+                            Text("Flushing…")
+                        }
+                    case .succeeded:
+                        Label("Flushed", systemImage: "checkmark.circle.fill")
+                    }
+                }
+                .controlSize(.mini)
+                .disabled(dnsCacheController.status == .flushing)
+                .help("Clear the macOS DNS cache (administrator approval required)")
                 if !interfaces.isEmpty {
                     Picker("Network interface", selection: $selectedInterface) {
                         Text("All").tag("all")
@@ -375,7 +402,7 @@ private struct NetworkCard: View {
         }
         .padding(12)
         .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 12))
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
         .onChange(of: interfaces.map(\.name)) { names in
             if selectedInterface != "all", !names.contains(selectedInterface) {
                 selectedInterface = "all"

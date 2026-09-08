@@ -10,4 +10,4 @@ Please use GitHub's private vulnerability reporting feature. Do not open a publi
 
 For ordinary non-sensitive bugs, use the repository issue tracker and omit personal paths, process names, exported snapshots, or other identifying system details unless they are essential and have been reviewed first.
 
-MMMonitor is intended to remain local-only, read-only, and free of privileged helpers. A change that weakens any of those boundaries should be treated as security-sensitive.
+MMMonitor is intended to remain local-only and free of persistent privileged helpers. Its one mutating system action, DNS cache flushing, is user-initiated, uses a fixed command with no dynamic input, and requires the normal macOS administrator authorization flow. A change that broadens those privileges or weakens any of these boundaries should be treated as security-sensitive.

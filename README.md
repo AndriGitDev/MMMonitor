@@ -6,7 +6,7 @@
 
 **M-series Mac Monitor** — Apple Silicon performance at a glance.
 
-MMMonitor is a lightweight, native, open-source menu-bar system monitor for Apple Silicon Macs. It is local-only: no accounts, analytics, network services, privileged helper, or administrator access.
+MMMonitor is a lightweight, native, open-source menu-bar system monitor for Apple Silicon Macs. It is local-only: no accounts, analytics, network services, or persistent privileged helper. Administrator approval is requested only when you explicitly flush the DNS cache.
 
 For deployment or security review, see [Architecture and IT Review](docs/ARCHITECTURE.md).
 
@@ -18,6 +18,7 @@ For deployment or security review, see [Architecture and IT Review](docs/ARCHITE
 - swap usage
 - current download and upload throughput
 - selectable per-interface network throughput
+- one-click DNS cache flushing from the Network card
 - used and total capacity for mounted local volumes
 - battery percentage, charging state, health, cycle count, and estimated remaining time
 - top CPU processes with resident-memory use
@@ -63,7 +64,7 @@ The release build is ad-hoc signed and targets `arm64`. GitHub releases provide 
 3. Unzip it and move `MMMonitor.app` to `/Applications`.
 4. Control-click the app and choose **Open** the first time if macOS offers that option.
 
-Managed Macs may require IT approval for an ad-hoc-signed or non-notarized app. MMMonitor does not need administrator access, and its local-only design should be straightforward for an administrator to inspect. Do not bypass an organization’s security policy.
+Managed Macs may require IT approval for an ad-hoc-signed or non-notarized app. MMMonitor's local-only design and fixed DNS maintenance command are straightforward for an administrator to inspect. DNS flushing asks for administrator approval through the normal macOS dialog; monitoring itself remains unprivileged. Do not bypass an organization’s security policy.
 
 Click the gear in the dashboard to open the independent settings window. Its Menu Bar tab controls the visible metrics, their left-to-right order, presets, icon, and CPU sparkline. Settings can also be opened with <kbd>⌘</kbd><kbd>,</kbd> while MMMonitor is active.
 
@@ -118,7 +119,7 @@ shasum -a 256 -c MMMonitor-0.3.0-arm64.zip.sha256
 
 ## Privacy
 
-MMMonitor reads aggregate statistics from local macOS system APIs. It does not transmit monitoring data or persist it automatically. Snapshot files are written only when the user explicitly exports one. The network module reads interface byte counters to calculate throughput; it does not inspect network traffic or destinations.
+MMMonitor reads aggregate statistics from local macOS system APIs. It does not transmit monitoring data or persist it automatically. Snapshot files are written only when the user explicitly exports one. The network module reads interface byte counters to calculate throughput; it does not inspect network traffic or destinations. When you click Flush DNS, MMMonitor asks macOS to run the fixed `/usr/bin/dscacheutil -flushcache` and `/usr/bin/killall -HUP mDNSResponder` commands with administrator privileges. No user input is inserted into that command and no helper remains installed or running.
 
 ## License
 

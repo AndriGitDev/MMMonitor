@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- added a one-click DNS cache flush action to the Network card
+- kept elevated access scoped to a fixed, user-initiated command with no persistent privileged helper
+
 ## 0.3.0 — 2026-08-25
 
 - replaced the single menu-bar reading with a configurable multi-metric layout

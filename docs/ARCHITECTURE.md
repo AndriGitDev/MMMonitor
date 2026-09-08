@@ -1,6 +1,6 @@
 # MMMonitor Architecture and IT Review
 
-MMMonitor is a single native `arm64` menu-bar application. It runs as a macOS UI agent (`LSUIElement`) and has no daemon, privileged helper, kernel extension, browser component, account, or cloud service.
+MMMonitor is a single native `arm64` menu-bar application. It runs as a macOS UI agent (`LSUIElement`) and has no daemon, persistent privileged helper, kernel extension, browser component, account, or cloud service.
 
 ## Data flow
 
@@ -8,6 +8,7 @@ MMMonitor is a single native `arm64` menu-bar application. It runs as a macOS UI
 Public local macOS APIs → in-process sampler → in-memory snapshot/history → menu bar and dashboard
                                                        └───────────────→ optional local notification
                                                        └───────────────→ user-requested JSON export
+User clicks Flush DNS → macOS authorization dialog → fixed local cache reset command
 ```
 
 Monitoring data stays in the MMMonitor process. It is not transmitted and is not automatically written to disk.
@@ -47,10 +48,11 @@ The optional menu-bar sparkline reuses existing in-memory CPU samples and create
 
 ## Permissions and persistence
 
-MMMonitor requires no administrator access. Optional features may prompt through normal macOS controls:
+Monitoring requires no administrator access. Optional features may prompt through normal macOS controls:
 
 - **Notifications**: requested only when threshold alerts are enabled.
 - **Launch at login**: registered through `SMAppService`; macOS may require approval in Login Items.
+- **Flush DNS**: invokes only `/usr/bin/dscacheutil -flushcache` followed by `/usr/bin/killall -HUP mDNSResponder`, after explicit user action and administrator authorization. The command is constant, accepts no input, and leaves no privileged process installed.
 
 Disabling launch at login and removing `MMMonitor.app` stops all executable persistence. Preferences can be removed separately through the standard defaults domain `local.mmmonitor.app` if desired.
 

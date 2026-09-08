@@ -5,13 +5,16 @@ import SwiftUI
 struct MMMonitorApp: App {
     @StateObject private var settings: AppSettings
     @StateObject private var monitor: SystemMonitor
+    @StateObject private var dnsCacheController: DNSCacheController
     private let settingsWindowController: SettingsWindowController
 
     init() {
         let settings = AppSettings()
         let monitor = SystemMonitor(settings: settings)
+        let dnsCacheController = DNSCacheController()
         _settings = StateObject(wrappedValue: settings)
         _monitor = StateObject(wrappedValue: monitor)
+        _dnsCacheController = StateObject(wrappedValue: dnsCacheController)
         let settingsWindowController = SettingsWindowController(
             settings: settings,
             snapshotProvider: { [weak monitor] in monitor?.snapshot ?? .empty }
@@ -43,6 +46,7 @@ struct MMMonitorApp: App {
             DashboardView(
                 monitor: monitor,
                 settings: settings,
+                dnsCacheController: dnsCacheController,
                 openSettings: settingsWindowController.show
             )
         } label: {
