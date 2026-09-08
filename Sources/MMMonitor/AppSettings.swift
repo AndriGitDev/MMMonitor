@@ -88,6 +88,7 @@ enum HistoryRange: Int, CaseIterable, Identifiable, Sendable {
     case oneMinute = 60
     case fifteenMinutes = 900
     case oneHour = 3_600
+    case oneDay = 86_400
 
     var id: Int { rawValue }
     var seconds: Int { rawValue }
@@ -97,6 +98,7 @@ enum HistoryRange: Int, CaseIterable, Identifiable, Sendable {
         case .oneMinute: "1 minute"
         case .fifteenMinutes: "15 minutes"
         case .oneHour: "1 hour"
+        case .oneDay: "1 day"
         }
     }
 }
@@ -169,6 +171,13 @@ final class AppSettings: ObservableObject {
             historyRangeDidChange?()
         }
     }
+    @Published var persistedHistoryEnabled: Bool {
+        didSet {
+            defaults.set(persistedHistoryEnabled, forKey: Keys.persistedHistoryEnabled)
+            persistedHistoryEnabledDidChange?(persistedHistoryEnabled)
+        }
+    }
+    @Published private(set) var oneDayHistorySampleCount = 0
     @Published var quietHoursEnabled: Bool {
         didSet { defaults.set(quietHoursEnabled, forKey: Keys.quietHoursEnabled) }
     }
@@ -182,6 +191,8 @@ final class AppSettings: ObservableObject {
 
     var refreshIntervalDidChange: (@MainActor (Double) -> Void)?
     var historyRangeDidChange: (@MainActor () -> Void)?
+    var persistedHistoryEnabledDidChange: (@MainActor (Bool) -> Void)?
+    var clearHistoryRequested: (@MainActor () -> Void)?
 
     private let defaults: UserDefaults
 
@@ -266,6 +277,7 @@ final class AppSettings: ObservableObject {
         historyRange = HistoryRange(
             rawValue: defaults.integer(forKey: Keys.historyRange)
         ) ?? .oneMinute
+        persistedHistoryEnabled = defaults.bool(forKey: Keys.persistedHistoryEnabled)
         quietHoursEnabled = defaults.bool(forKey: Keys.quietHoursEnabled)
         quietHoursStart = defaults.object(forKey: Keys.quietHoursStart) == nil
             ? 22 : defaults.integer(forKey: Keys.quietHoursStart)
@@ -296,6 +308,14 @@ final class AppSettings: ObservableObject {
         let destination = currentIndex + offset
         guard moduleOrder.indices.contains(destination) else { return }
         moduleOrder.swapAt(currentIndex, destination)
+    }
+
+    func clearHistory() {
+        clearHistoryRequested?()
+    }
+
+    func updateOneDayHistorySampleCount(_ count: Int) {
+        oneDayHistorySampleCount = count
     }
 
     func showsInMenuBar(_ component: MenuBarComponent) -> Bool {
@@ -390,6 +410,7 @@ final class AppSettings: ObservableObject {
         static let diskAlertThreshold = "diskAlertThreshold"
         static let batteryAlertThreshold = "batteryAlertThreshold"
         static let historyRange = "historyRange"
+        static let persistedHistoryEnabled = "persistedHistoryEnabled"
         static let quietHoursEnabled = "quietHoursEnabled"
         static let quietHoursStart = "quietHoursStart"
         static let quietHoursEnd = "quietHoursEnd"

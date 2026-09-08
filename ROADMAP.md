@@ -41,7 +41,7 @@ MMMonitor is moving faster than the original estimate: the native foundation and
 - [x] notification cooldowns
 - [x] configurable notification quiet hours
 - [x] selectable one-hour in-memory history
-- [ ] optional persisted one-day history with an explicit clear action
+- [x] optional persisted one-day history with an explicit clear action
 - [x] rearrangeable modules
 - [x] export a point-in-time JSON report
 

@@ -8,6 +8,7 @@ MMMonitor is a single native `arm64` menu-bar application. It runs as a macOS UI
 Public local macOS APIs → in-process sampler → in-memory snapshot/history → menu bar and dashboard
                                                        └───────────────→ optional local notification
                                                        └───────────────→ user-requested JSON export
+                                                       └───────────────→ optional 24-hour aggregate history
 User clicks Flush DNS → macOS authorization dialog → fixed local cache reset command
 ```
 
@@ -42,7 +43,8 @@ The optional menu-bar sparkline reuses existing in-memory CPU samples and create
 ## Storage
 
 - Preferences are stored in the app's standard macOS `UserDefaults` domain.
-- Live graph history is memory-only and is discarded when the app quits.
+- High-resolution graph history is memory-only and is discarded when the app quits.
+- If the user enables 24-hour persistence, MMMonitor stores at most 1,440 one-minute aggregate samples in `~/Library/Application Support/MMMonitor/history-v1.json`. Samples older than 24 hours are dropped, and Clear History removes the file.
 - A JSON snapshot is created only when the user chooses Copy Snapshot or Save Snapshot.
 - MMMonitor has no database, analytics SDK, update service, or background network client.
 

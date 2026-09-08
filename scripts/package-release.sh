@@ -7,6 +7,7 @@ VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$PROJ
 ARCHIVE="$PROJECT_DIR/dist/MMMonitor-$VERSION-arm64.zip"
 ARCHIVE_NAME="${ARCHIVE:t}"
 
+"$PROJECT_DIR/scripts/verify-history.sh"
 "$PROJECT_DIR/scripts/build-app.sh"
 "$PROJECT_DIR/scripts/verify-app.sh"
 
