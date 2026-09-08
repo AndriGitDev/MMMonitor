@@ -2,6 +2,7 @@ import Foundation
 import ServiceManagement
 
 enum MonitorModule: String, CaseIterable, Identifiable, Sendable {
+    case awake
     case cpu
     case memory
     case network
@@ -14,6 +15,7 @@ enum MonitorModule: String, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
+        case .awake: "Keep Awake"
         case .cpu: "CPU"
         case .memory: "Memory"
         case .network: "Network"
@@ -234,11 +236,15 @@ final class AppSettings: ObservableObject {
         menuBarShowsGraph = defaults.bool(forKey: Keys.menuBarShowsGraph)
 
         if let savedModules = defaults.stringArray(forKey: Keys.visibleModules) {
-            let parsed = Set(savedModules.compactMap(MonitorModule.init(rawValue:)))
+            var parsed = Set(savedModules.compactMap(MonitorModule.init(rawValue:)))
+            if defaults.integer(forKey: Keys.moduleLayoutVersion) < 1 {
+                parsed.insert(.awake)
+            }
             visibleModules = parsed.isEmpty ? Set(MonitorModule.allCases) : parsed
         } else {
             visibleModules = Set(MonitorModule.allCases)
         }
+        defaults.set(1, forKey: Keys.moduleLayoutVersion)
 
         let savedOrder = defaults.stringArray(forKey: Keys.moduleOrder)?
             .compactMap(MonitorModule.init(rawValue:)) ?? []
@@ -401,6 +407,7 @@ final class AppSettings: ObservableObject {
         static let menuBarLayoutVersion = "menuBarLayoutVersion"
         static let visibleModules = "visibleModules"
         static let moduleOrder = "moduleOrder"
+        static let moduleLayoutVersion = "moduleLayoutVersion"
         static let processSort = "processSort"
         static let selectedNetworkInterface = "selectedNetworkInterface"
         static let dashboardDensity = "dashboardDensity"

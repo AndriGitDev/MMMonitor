@@ -45,6 +45,7 @@ enum DevelopmentScreenshotExporter {
             monitor: monitor,
             settings: settings,
             dnsCacheController: DNSCacheController(),
+            awakeSessionController: AwakeSessionController(defaults: defaults),
             openSettings: {}
         )
         .environment(\.colorScheme, .dark)

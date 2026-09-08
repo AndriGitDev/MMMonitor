@@ -6,15 +6,18 @@ struct MMMonitorApp: App {
     @StateObject private var settings: AppSettings
     @StateObject private var monitor: SystemMonitor
     @StateObject private var dnsCacheController: DNSCacheController
+    @StateObject private var awakeSessionController: AwakeSessionController
     private let settingsWindowController: SettingsWindowController
 
     init() {
         let settings = AppSettings()
         let monitor = SystemMonitor(settings: settings)
         let dnsCacheController = DNSCacheController()
+        let awakeSessionController = AwakeSessionController()
         _settings = StateObject(wrappedValue: settings)
         _monitor = StateObject(wrappedValue: monitor)
         _dnsCacheController = StateObject(wrappedValue: dnsCacheController)
+        _awakeSessionController = StateObject(wrappedValue: awakeSessionController)
         let settingsWindowController = SettingsWindowController(
             settings: settings,
             snapshotProvider: { [weak monitor] in monitor?.snapshot ?? .empty }
@@ -47,10 +50,15 @@ struct MMMonitorApp: App {
                 monitor: monitor,
                 settings: settings,
                 dnsCacheController: dnsCacheController,
+                awakeSessionController: awakeSessionController,
                 openSettings: settingsWindowController.show
             )
         } label: {
-            MenuBarLabel(monitor: monitor, settings: settings)
+            MenuBarLabel(
+                monitor: monitor,
+                settings: settings,
+                awakeSessionController: awakeSessionController
+            )
         }
         .menuBarExtraStyle(.window)
         .commands {

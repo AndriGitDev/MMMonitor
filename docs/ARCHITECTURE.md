@@ -10,6 +10,7 @@ Public local macOS APIs → in-process sampler → in-memory snapshot/history �
                                                        └───────────────→ user-requested JSON export
                                                        └───────────────→ optional 24-hour aggregate history
 User clicks Flush DNS → macOS authorization dialog → fixed local cache reset command
+User starts Keep Awake → in-process IOKit power assertion → released on stop, expiry, or quit
 ```
 
 Monitoring data stays in the MMMonitor process. It is not transmitted and is not automatically written to disk.
@@ -27,6 +28,7 @@ Monitoring data stays in the MMMonitor process. It is not transmitted and is not
 | Top processes | read-only `libproc` task summaries |
 | Thermal state and uptime | Foundation `ProcessInfo` |
 | Load averages | Darwin `getloadavg` |
+| Keep Awake session | IOKit power-management assertions |
 
 MMMonitor calculates rates from counter differences. It does not inspect network packets, destinations, file contents, keystrokes, window contents, or process arguments.
 
@@ -55,6 +57,7 @@ Monitoring requires no administrator access. Optional features may prompt throug
 - **Notifications**: requested only when threshold alerts are enabled.
 - **Launch at login**: registered through `SMAppService`; macOS may require approval in Login Items.
 - **Flush DNS**: invokes only `/usr/bin/dscacheutil -flushcache` followed by `/usr/bin/killall -HUP mDNSResponder`, after explicit user action and administrator authorization. The command is constant, accepts no input, and leaves no privileged process installed.
+- **Keep Awake**: creates public IOKit system-sleep and, when selected, display-sleep assertions only for the active user-started session. It requires no administrator access, installs no helper, and releases every assertion when stopped, expired, switched, or quit.
 
 Disabling launch at login and removing `MMMonitor.app` stops all executable persistence. Preferences can be removed separately through the standard defaults domain `local.mmmonitor.app` if desired.
 

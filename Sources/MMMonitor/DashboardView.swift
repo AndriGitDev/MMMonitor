@@ -5,6 +5,7 @@ struct DashboardView: View {
     @ObservedObject var monitor: SystemMonitor
     @ObservedObject var settings: AppSettings
     @ObservedObject var dnsCacheController: DNSCacheController
+    @ObservedObject var awakeSessionController: AwakeSessionController
     let openSettings: @MainActor () -> Void
 
     private let blue = Color(red: 0.20, green: 0.55, blue: 0.95)
@@ -72,6 +73,11 @@ struct DashboardView: View {
     private func moduleView(_ module: MonitorModule) -> some View {
         if settings.isVisible(module) {
             switch module {
+            case .awake:
+                AwakeSessionCard(
+                    controller: awakeSessionController,
+                    color: green
+                )
             case .cpu:
                 CPUCard(
                     usage: monitor.snapshot.cpuUsage,
@@ -183,6 +189,78 @@ struct DashboardView: View {
         return "\(main) • \(MetricFormatting.byteCount(monitor.snapshot.swapUsed)) swap"
     }
 
+}
+
+private struct AwakeSessionCard: View {
+    @ObservedObject var controller: AwakeSessionController
+    let color: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Label("Keep Awake", systemImage: "cup.and.saucer")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(color)
+                Spacer()
+                if controller.isActive {
+                    Label(controller.remainingText, systemImage: "checkmark.circle.fill")
+                        .foregroundStyle(color)
+                } else {
+                    Text("Inactive")
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .font(.caption.monospacedDigit())
+
+            Picker("Awake mode", selection: Binding(
+                get: { controller.mode },
+                set: { newMode in controller.selectMode(newMode) }
+            )) {
+                ForEach(AwakeMode.allCases) { mode in
+                    Text(mode.title).tag(mode)
+                }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+
+            Text(controller.mode.detail)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            HStack {
+                Menu {
+                    ForEach(SessionDuration.menuOptions, id: \.self) { duration in
+                        Button(duration.menuTitle) {
+                            controller.start(duration: duration)
+                        }
+                    }
+                } label: {
+                    Label(
+                        controller.isActive ? "Restart Session" : "Start Session",
+                        systemImage: "play.fill"
+                    )
+                }
+                .controlSize(.small)
+
+                Spacer()
+
+                Button("Stop", role: .destructive, action: controller.stop)
+                    .controlSize(.small)
+                    .disabled(!controller.isActive)
+            }
+        }
+        .padding(12)
+        .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 12))
+        .accessibilityElement(children: .contain)
+        .alert("Couldn’t Start Keep Awake", isPresented: Binding(
+            get: { controller.errorMessage != nil },
+            set: { if !$0 { controller.errorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) { controller.errorMessage = nil }
+        } message: {
+            Text(controller.errorMessage ?? "An unknown error occurred.")
+        }
+    }
 }
 
 private struct UnavailableCard: View {

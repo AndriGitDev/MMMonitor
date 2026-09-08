@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.5.0 — 2026-09-08
+
+- fixed the CPU menu-bar sparkline so it remains visible on dark, light, and translucent menu bars
+- integrated MacQueen's Keep Awake controls as a reorderable dashboard module
+- added 30-minute, one-, two-, four-, eight-hour, and indefinite awake sessions
+- added separate Mac-only and Mac-plus-display awake modes
+- added a live active-session countdown to the existing menu-bar label
+- added mode switching during active sessions without resetting the remaining time
+- added automatic assertion cleanup when sessions stop, expire, switch modes, or MMMonitor quits
+
 ## 0.4.0 — 2026-09-08
 
 - added battery design and full-charge capacity details where available

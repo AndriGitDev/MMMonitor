@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 @MainActor
@@ -77,6 +78,7 @@ enum MenuBarPresentation {
 struct MenuBarLabel: View {
     @ObservedObject var monitor: SystemMonitor
     @ObservedObject var settings: AppSettings
+    @ObservedObject var awakeSessionController: AwakeSessionController
 
     private var metricText: some View {
         Text(MenuBarPresentation.text(
@@ -93,6 +95,13 @@ struct MenuBarLabel: View {
     @ViewBuilder
     var body: some View {
         HStack(spacing: 4) {
+            if awakeSessionController.isActive {
+                Label(awakeSessionController.remainingText, systemImage: "cup.and.saucer.fill")
+                    .font(.system(size: 12, design: .monospaced))
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+            }
             if settings.menuBarShowsGraph {
                 MenuBarSparkline(values: monitor.cpuHistory)
             }
@@ -107,11 +116,14 @@ struct MenuBarLabel: View {
     }
 
     private var accessibilityText: String {
-        MenuBarPresentation.accessibilityText(
+        let metrics = MenuBarPresentation.accessibilityText(
             snapshot: monitor.snapshot,
             components: settings.menuBarComponents,
             order: settings.menuBarComponentOrder
         )
+        guard awakeSessionController.isActive else { return metrics }
+        return "MMMonitor, Keep Awake active, \(awakeSessionController.remainingText), " +
+            metrics.replacingOccurrences(of: "MMMonitor, ", with: "")
     }
 }
 
@@ -119,11 +131,56 @@ private struct MenuBarSparkline: View {
     let values: [Double]
 
     var body: some View {
-        Sparkline(
-            values: Array(values.suffix(30)),
-            color: .primary,
-            fixedRange: 0...1
-        )
-        .frame(width: 28, height: 12)
+        Image(nsImage: MenuBarSparklineRenderer.image(values: Array(values.suffix(30))))
+            .renderingMode(.template)
+            .resizable()
+            .interpolation(.high)
+            .frame(width: 28, height: 12)
+            .accessibilityHidden(true)
+    }
+}
+
+private enum MenuBarSparklineRenderer {
+    private static let size = NSSize(width: 28, height: 12)
+
+    static func image(values: [Double]) -> NSImage {
+        let image = NSImage(size: size, flipped: true) { bounds in
+            let points = normalizedPoints(values: values, in: bounds.size)
+            guard points.count > 1 else { return true }
+
+            let fill = NSBezierPath()
+            fill.move(to: NSPoint(x: points[0].x, y: bounds.height))
+            for point in points {
+                fill.line(to: point)
+            }
+            fill.line(to: NSPoint(x: points[points.count - 1].x, y: bounds.height))
+            fill.close()
+            NSColor.black.withAlphaComponent(0.22).setFill()
+            fill.fill()
+
+            let line = NSBezierPath()
+            line.move(to: points[0])
+            for point in points.dropFirst() {
+                line.line(to: point)
+            }
+            line.lineWidth = 1.5
+            line.lineJoinStyle = .round
+            line.lineCapStyle = .round
+            NSColor.black.setStroke()
+            line.stroke()
+            return true
+        }
+        image.isTemplate = true
+        return image
+    }
+
+    private static func normalizedPoints(values: [Double], in size: NSSize) -> [NSPoint] {
+        guard values.count > 1 else { return [] }
+        return values.enumerated().map { index, value in
+            let x = size.width * CGFloat(index) / CGFloat(values.count - 1)
+            let normalized = min(1, max(0, value))
+            let y = size.height * (1 - CGFloat(normalized))
+            return NSPoint(x: x, y: y)
+        }
     }
 }

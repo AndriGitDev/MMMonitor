@@ -27,6 +27,8 @@ For deployment or security review, see [Architecture and IT Review](docs/ARCHITE
 - compact, balanced, network, and full menu-bar presets
 - reorderable menu-bar metrics with stable-width values and an optional app icon
 - optional live CPU sparkline in the menu bar
+- timed or indefinite Keep Awake sessions, with separate Mac-only and Mac-plus-display modes
+- live Keep Awake countdown in the menu bar with automatic stop and assertion cleanup
 - independent settings window that remains interactive while monitoring updates
 - configurable one-, two-, or five-second sampling
 - optional persisted one-day history using bounded minute averages and an explicit clear action
@@ -115,12 +117,12 @@ The included GitHub Actions workflow performs the same release build and verific
 To verify a downloaded release, place the zip beside its `.sha256` file and run:
 
 ```sh
-shasum -a 256 -c MMMonitor-0.4.0-arm64.zip.sha256
+shasum -a 256 -c MMMonitor-0.5.0-arm64.zip.sha256
 ```
 
 ## Privacy
 
-MMMonitor reads aggregate statistics from local macOS system APIs and does not transmit monitoring data. Live graph history stays in memory unless you enable Preserve 24-hour history; when enabled, MMMonitor stores at most 1,440 minute-average samples collected while it is running in Application Support and automatically drops data older than one day. The settings window provides an explicit Clear History action. Snapshot files are written only when the user explicitly exports one. The network module reads interface byte counters to calculate throughput; it does not inspect network traffic or destinations. When you click Flush DNS, MMMonitor asks macOS to run the fixed `/usr/bin/dscacheutil -flushcache` and `/usr/bin/killall -HUP mDNSResponder` commands with administrator privileges. No user input is inserted into that command and no helper remains installed or running.
+MMMonitor reads aggregate statistics from local macOS system APIs and does not transmit monitoring data. Live graph history stays in memory unless you enable Preserve 24-hour history; when enabled, MMMonitor stores at most 1,440 minute-average samples collected while it is running in Application Support and automatically drops data older than one day. The settings window provides an explicit Clear History action. Snapshot files are written only when the user explicitly exports one. The network module reads interface byte counters to calculate throughput; it does not inspect network traffic or destinations. Keep Awake uses public IOKit power assertions only while a user-started session is active, requires no administrator access, and releases its assertions when stopped, expired, or quit. When you click Flush DNS, MMMonitor asks macOS to run the fixed `/usr/bin/dscacheutil -flushcache` and `/usr/bin/killall -HUP mDNSResponder` commands with administrator privileges. No user input is inserted into that command and no helper remains installed or running.
 
 ## License
 
