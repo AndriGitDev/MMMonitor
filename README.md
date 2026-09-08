@@ -114,7 +114,7 @@ The included GitHub Actions workflow performs the same release build and verific
 To verify a downloaded release, place the zip beside its `.sha256` file and run:
 
 ```sh
-shasum -a 256 -c MMMonitor-0.3.0-arm64.zip.sha256
+shasum -a 256 -c MMMonitor-0.3.1-arm64.zip.sha256
 ```
 
 ## Privacy
