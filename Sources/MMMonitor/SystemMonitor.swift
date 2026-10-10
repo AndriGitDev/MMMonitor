@@ -1,14 +1,83 @@
 import Foundation
 
 @MainActor
+final class MenuBarMonitorState: ObservableObject {
+    struct Presentation {
+        var snapshot: SystemSnapshot
+        var cpuHistory: [Double]
+    }
+
+    @Published private(set) var presentation: Presentation
+
+    init(snapshot: SystemSnapshot = .empty, cpuHistory: [Double] = []) {
+        presentation = Presentation(snapshot: snapshot, cpuHistory: cpuHistory)
+    }
+
+    func update(snapshot: SystemSnapshot, cpuHistory: [Double]) {
+        presentation = Presentation(snapshot: snapshot, cpuHistory: cpuHistory)
+    }
+}
+
+@MainActor
+final class DashboardMonitorState: ObservableObject {
+    struct Presentation {
+        var snapshot: SystemSnapshot
+        var cpuHistory: [Double]
+        var memoryHistory: [Double]
+        var downloadHistory: [Double]
+        var uploadHistory: [Double]
+        var interfaceDownloadHistory: [String: [Double]]
+        var interfaceUploadHistory: [String: [Double]]
+    }
+
+    @Published private(set) var presentation: Presentation
+
+    init(
+        snapshot: SystemSnapshot = .empty,
+        cpuHistory: [Double] = [],
+        memoryHistory: [Double] = [],
+        downloadHistory: [Double] = [],
+        uploadHistory: [Double] = [],
+        interfaceDownloadHistory: [String: [Double]] = [:],
+        interfaceUploadHistory: [String: [Double]] = [:]
+    ) {
+        presentation = Presentation(
+            snapshot: snapshot,
+            cpuHistory: cpuHistory,
+            memoryHistory: memoryHistory,
+            downloadHistory: downloadHistory,
+            uploadHistory: uploadHistory,
+            interfaceDownloadHistory: interfaceDownloadHistory,
+            interfaceUploadHistory: interfaceUploadHistory
+        )
+    }
+
+    func update(
+        snapshot: SystemSnapshot,
+        cpuHistory: [Double],
+        memoryHistory: [Double],
+        downloadHistory: [Double],
+        uploadHistory: [Double],
+        interfaceDownloadHistory: [String: [Double]],
+        interfaceUploadHistory: [String: [Double]]
+    ) {
+        presentation = Presentation(
+            snapshot: snapshot,
+            cpuHistory: cpuHistory,
+            memoryHistory: memoryHistory,
+            downloadHistory: downloadHistory,
+            uploadHistory: uploadHistory,
+            interfaceDownloadHistory: interfaceDownloadHistory,
+            interfaceUploadHistory: interfaceUploadHistory
+        )
+    }
+}
+
+@MainActor
 final class SystemMonitor: ObservableObject {
-    @Published private(set) var snapshot = SystemSnapshot.empty
-    @Published private(set) var cpuHistory: [Double] = []
-    @Published private(set) var memoryHistory: [Double] = []
-    @Published private(set) var downloadHistory: [Double] = []
-    @Published private(set) var uploadHistory: [Double] = []
-    @Published private(set) var interfaceDownloadHistory: [String: [Double]] = [:]
-    @Published private(set) var interfaceUploadHistory: [String: [Double]] = [:]
+    private(set) var snapshot = SystemSnapshot.empty
+    let menuBarState: MenuBarMonitorState
+    let dashboardState: DashboardMonitorState
 
     private let sampler = SystemSampler()
     private let alertController = AlertController()
@@ -28,9 +97,12 @@ final class SystemMonitor: ObservableObject {
     private var historyPersistenceTask: Task<Void, Never>?
     private var hasLoadedPersistedHistory = false
     private var shouldPersistAfterLoad = false
+    private var isDashboardVisible = false
 
     init(settings: AppSettings) {
         self.settings = settings
+        menuBarState = MenuBarMonitorState()
+        dashboardState = DashboardMonitorState()
         let persistedHistoryStore = PersistedHistoryStore()
         self.persistedHistoryStore = persistedHistoryStore
         self.refreshInterval = settings.refreshInterval
@@ -60,13 +132,17 @@ final class SystemMonitor: ObservableObject {
         uploadHistory: [Double]
     ) {
         self.settings = settings
+        menuBarState = MenuBarMonitorState(snapshot: previewSnapshot, cpuHistory: cpuHistory)
+        dashboardState = DashboardMonitorState(
+            snapshot: previewSnapshot,
+            cpuHistory: cpuHistory,
+            memoryHistory: memoryHistory,
+            downloadHistory: downloadHistory,
+            uploadHistory: uploadHistory
+        )
         persistedHistoryStore = nil
         refreshInterval = settings.refreshInterval
         snapshot = previewSnapshot
-        self.cpuHistory = cpuHistory
-        self.memoryHistory = memoryHistory
-        self.downloadHistory = downloadHistory
-        self.uploadHistory = uploadHistory
         liveCPUHistory = cpuHistory
         liveMemoryHistory = memoryHistory
         liveDownloadHistory = downloadHistory
@@ -77,7 +153,7 @@ final class SystemMonitor: ObservableObject {
         guard interval != refreshInterval else { return }
         refreshInterval = interval
         trimLiveHistories()
-        publishHistories()
+        publishViewStates()
         scheduleTimer()
     }
 
@@ -88,12 +164,16 @@ final class SystemMonitor: ObservableObject {
                 self?.refresh()
             }
         }
+        timer.tolerance = min(0.25, refreshInterval * 0.1)
         RunLoop.main.add(timer, forMode: .common)
         self.timer = timer
     }
 
     func refresh(forceSlowMetrics: Bool = false) {
-        snapshot = sampler.sample(forceSlowMetrics: forceSlowMetrics)
+        snapshot = sampler.sample(
+            forceSlowMetrics: forceSlowMetrics,
+            includeProcesses: isDashboardVisible
+        )
         alertController.evaluate(snapshot, settings: settings)
         appendLive(snapshot.cpuUsage, to: &liveCPUHistory)
         appendLive(snapshot.memoryUsage, to: &liveMemoryHistory)
@@ -116,7 +196,15 @@ final class SystemMonitor: ObservableObject {
             settings.updateOneDayHistorySampleCount(oneDaySamples.count)
             persistOneDayHistoryIfEnabled()
         }
-        publishHistories()
+        publishViewStates()
+    }
+
+    func setDashboardVisible(_ visible: Bool) {
+        guard visible != isDashboardVisible else { return }
+        isDashboardVisible = visible
+        if visible, persistedHistoryStore != nil {
+            refresh(forceSlowMetrics: true)
+        }
     }
 
     private func appendLive(_ value: Double, to history: inout [Double]) {
@@ -146,32 +234,48 @@ final class SystemMonitor: ObservableObject {
     }
 
     func updateHistoryRange() {
-        publishHistories()
+        publishDashboardStateIfVisible()
     }
 
-    private func publishHistories() {
+    private func publishViewStates() {
+        menuBarState.update(
+            snapshot: snapshot,
+            cpuHistory: Array(liveCPUHistory.suffix(30))
+        )
+        publishDashboardStateIfVisible()
+    }
+
+    private func publishDashboardStateIfVisible() {
+        guard isDashboardVisible else { return }
+
         if settings.historyRange == .oneDay {
             let samples = oneDayDisplaySamples
-            cpuHistory = samples.map(\.cpuUsage)
-            memoryHistory = samples.map(\.memoryUsage)
-            downloadHistory = samples.map(\.downloadRate)
-            uploadHistory = samples.map(\.uploadRate)
-            interfaceDownloadHistory = dailyInterfaceHistory(samples, download: true)
-            interfaceUploadHistory = dailyInterfaceHistory(samples, download: false)
+            dashboardState.update(
+                snapshot: snapshot,
+                cpuHistory: samples.map(\.cpuUsage),
+                memoryHistory: samples.map(\.memoryUsage),
+                downloadHistory: samples.map(\.downloadRate),
+                uploadHistory: samples.map(\.uploadRate),
+                interfaceDownloadHistory: dailyInterfaceHistory(samples, download: true),
+                interfaceUploadHistory: dailyInterfaceHistory(samples, download: false)
+            )
             return
         }
 
         let limit = max(2, Int(Double(settings.historyRange.seconds) / refreshInterval))
-        cpuHistory = Array(liveCPUHistory.suffix(limit))
-        memoryHistory = Array(liveMemoryHistory.suffix(limit))
-        downloadHistory = Array(liveDownloadHistory.suffix(limit))
-        uploadHistory = Array(liveUploadHistory.suffix(limit))
-        interfaceDownloadHistory = liveInterfaceDownloadHistory.mapValues {
-            Array($0.suffix(limit))
-        }
-        interfaceUploadHistory = liveInterfaceUploadHistory.mapValues {
-            Array($0.suffix(limit))
-        }
+        dashboardState.update(
+            snapshot: snapshot,
+            cpuHistory: Array(liveCPUHistory.suffix(limit)),
+            memoryHistory: Array(liveMemoryHistory.suffix(limit)),
+            downloadHistory: Array(liveDownloadHistory.suffix(limit)),
+            uploadHistory: Array(liveUploadHistory.suffix(limit)),
+            interfaceDownloadHistory: liveInterfaceDownloadHistory.mapValues {
+                Array($0.suffix(limit))
+            },
+            interfaceUploadHistory: liveInterfaceUploadHistory.mapValues {
+                Array($0.suffix(limit))
+            }
+        )
     }
 
     private var oneDayDisplaySamples: [MinuteHistorySample] {
@@ -224,7 +328,7 @@ final class SystemMonitor: ObservableObject {
         oneDaySamples = PersistedHistoryStore.retained(Array(samplesByMinute.values))
         hasLoadedPersistedHistory = true
         settings.updateOneDayHistorySampleCount(oneDaySamples.count)
-        publishHistories()
+        publishDashboardStateIfVisible()
         if shouldPersistAfterLoad {
             shouldPersistAfterLoad = false
             persistOneDayHistoryIfEnabled()
@@ -264,7 +368,7 @@ final class SystemMonitor: ObservableObject {
         oneDaySamples = []
         minuteHistoryAccumulator.clear()
         settings.updateOneDayHistorySampleCount(0)
-        publishHistories()
+        publishDashboardStateIfVisible()
 
         guard let persistedHistoryStore else { return }
         let previousTask = historyPersistenceTask

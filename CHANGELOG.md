@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- stopped the closed dashboard from performing offscreen layout work on every sample
+- consolidated each view's metrics into one observable update per refresh
+- paused top-process enumeration while the dashboard is closed
+- replaced per-refresh menu-bar sparkline images with direct drawing
+- added timer tolerance so macOS can coalesce monitoring wakeups
+
 ## 0.5.0 — 2026-09-08
 
 - fixed the CPU menu-bar sparkline so it remains visible on dark, light, and translucent menu bars

@@ -2,7 +2,8 @@ import AppKit
 import SwiftUI
 
 struct DashboardView: View {
-    @ObservedObject var monitor: SystemMonitor
+    let monitor: SystemMonitor
+    @ObservedObject private var monitorState: DashboardMonitorState
     @ObservedObject var settings: AppSettings
     @ObservedObject var dnsCacheController: DNSCacheController
     @ObservedObject var awakeSessionController: AwakeSessionController
@@ -12,6 +13,21 @@ struct DashboardView: View {
     private let purple = Color(red: 0.62, green: 0.38, blue: 0.92)
     private let orange = Color(red: 0.96, green: 0.55, blue: 0.18)
     private let green = Color(red: 0.20, green: 0.72, blue: 0.48)
+
+    init(
+        monitor: SystemMonitor,
+        settings: AppSettings,
+        dnsCacheController: DNSCacheController,
+        awakeSessionController: AwakeSessionController,
+        openSettings: @escaping @MainActor () -> Void
+    ) {
+        self.monitor = monitor
+        monitorState = monitor.dashboardState
+        self.settings = settings
+        self.dnsCacheController = dnsCacheController
+        self.awakeSessionController = awakeSessionController
+        self.openSettings = openSettings
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -33,6 +49,8 @@ struct DashboardView: View {
             height: settings.dashboardDensity == .compact ? 540 : 600
         )
         .background(Color(nsColor: .windowBackgroundColor))
+        .onAppear { monitor.setDashboardVisible(true) }
+        .onDisappear { monitor.setDashboardVisible(false) }
         .alert("Couldn’t Flush DNS Cache", isPresented: Binding(
             get: { dnsCacheController.errorMessage != nil },
             set: { if !$0 { dnsCacheController.errorMessage = nil } }
@@ -80,9 +98,9 @@ struct DashboardView: View {
                 )
             case .cpu:
                 CPUCard(
-                    usage: monitor.snapshot.cpuUsage,
-                    perCoreUsage: monitor.snapshot.perCoreUsage,
-                    history: monitor.cpuHistory,
+                    usage: monitorState.presentation.snapshot.cpuUsage,
+                    perCoreUsage: monitorState.presentation.snapshot.perCoreUsage,
+                    history: monitorState.presentation.cpuHistory,
                     historyTitle: settings.historyRange.title,
                     color: blue
                 )
@@ -90,35 +108,35 @@ struct DashboardView: View {
                 MetricCard(
                     icon: "memorychip",
                     title: "Memory",
-                    value: MetricFormatting.percentage(monitor.snapshot.memoryUsage),
+                    value: MetricFormatting.percentage(monitorState.presentation.snapshot.memoryUsage),
                     detail: memoryDetail,
-                    progress: monitor.snapshot.memoryUsage,
-                    history: monitor.memoryHistory,
+                    progress: monitorState.presentation.snapshot.memoryUsage,
+                    history: monitorState.presentation.memoryHistory,
                     color: purple
                 )
             case .network:
                 NetworkCard(
-                    downloadRate: monitor.snapshot.downloadRate,
-                    uploadRate: monitor.snapshot.uploadRate,
-                    interfaces: monitor.snapshot.networkInterfaces,
+                    downloadRate: monitorState.presentation.snapshot.downloadRate,
+                    uploadRate: monitorState.presentation.snapshot.uploadRate,
+                    interfaces: monitorState.presentation.snapshot.networkInterfaces,
                     selectedInterface: $settings.selectedNetworkInterface,
-                    downloadHistory: monitor.downloadHistory,
-                    uploadHistory: monitor.uploadHistory,
-                    interfaceDownloadHistory: monitor.interfaceDownloadHistory,
-                    interfaceUploadHistory: monitor.interfaceUploadHistory,
+                    downloadHistory: monitorState.presentation.downloadHistory,
+                    uploadHistory: monitorState.presentation.uploadHistory,
+                    interfaceDownloadHistory: monitorState.presentation.interfaceDownloadHistory,
+                    interfaceUploadHistory: monitorState.presentation.interfaceUploadHistory,
                     dnsCacheController: dnsCacheController,
                     color: green
                 )
             case .disk:
                 DiskCard(
-                    volumes: monitor.snapshot.volumes,
-                    fallbackUsed: monitor.snapshot.diskUsed,
-                    fallbackTotal: monitor.snapshot.diskTotal,
+                    volumes: monitorState.presentation.snapshot.volumes,
+                    fallbackUsed: monitorState.presentation.snapshot.diskUsed,
+                    fallbackTotal: monitorState.presentation.snapshot.diskTotal,
                     color: orange
                 )
             case .battery:
-                if monitor.snapshot.battery.isPresent {
-                    BatteryCard(battery: monitor.snapshot.battery, color: green)
+                if monitorState.presentation.snapshot.battery.isPresent {
+                    BatteryCard(battery: monitorState.presentation.snapshot.battery, color: green)
                 } else {
                     UnavailableCard(
                         icon: "battery.0percent",
@@ -129,16 +147,16 @@ struct DashboardView: View {
                 }
             case .processes:
                 ProcessCard(
-                    processes: monitor.snapshot.topProcesses,
+                    processes: monitorState.presentation.snapshot.topProcesses,
                     sort: $settings.processSort,
-                    isCollecting: monitor.cpuHistory.count < 2,
+                    isCollecting: monitorState.presentation.cpuHistory.count < 2,
                     color: blue
                 )
             case .system:
                 SystemCard(
-                    thermalLevel: monitor.snapshot.thermalLevel,
-                    uptime: monitor.snapshot.systemUptime,
-                    loadAverages: monitor.snapshot.loadAverages,
+                    thermalLevel: monitorState.presentation.snapshot.thermalLevel,
+                    uptime: monitorState.presentation.snapshot.systemUptime,
+                    loadAverages: monitorState.presentation.snapshot.loadAverages,
                     color: orange
                 )
             }
@@ -184,9 +202,10 @@ struct DashboardView: View {
     }
 
     private var memoryDetail: String {
-        let main = "\(MetricFormatting.byteCount(monitor.snapshot.memoryUsed)) of \(MetricFormatting.byteCount(monitor.snapshot.memoryTotal))"
-        guard monitor.snapshot.swapUsed > 0 else { return "\(main) • no swap used" }
-        return "\(main) • \(MetricFormatting.byteCount(monitor.snapshot.swapUsed)) swap"
+        let snapshot = monitorState.presentation.snapshot
+        let main = "\(MetricFormatting.byteCount(snapshot.memoryUsed)) of \(MetricFormatting.byteCount(snapshot.memoryTotal))"
+        guard snapshot.swapUsed > 0 else { return "\(main) • no swap used" }
+        return "\(main) • \(MetricFormatting.byteCount(snapshot.swapUsed)) swap"
     }
 
 }

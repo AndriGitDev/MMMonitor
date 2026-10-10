@@ -76,13 +76,23 @@ enum MenuBarPresentation {
 }
 
 struct MenuBarLabel: View {
-    @ObservedObject var monitor: SystemMonitor
+    @ObservedObject var monitorState: MenuBarMonitorState
     @ObservedObject var settings: AppSettings
     @ObservedObject var awakeSessionController: AwakeSessionController
 
+    init(
+        monitor: SystemMonitor,
+        settings: AppSettings,
+        awakeSessionController: AwakeSessionController
+    ) {
+        monitorState = monitor.menuBarState
+        self.settings = settings
+        self.awakeSessionController = awakeSessionController
+    }
+
     private var metricText: some View {
         Text(MenuBarPresentation.text(
-            snapshot: monitor.snapshot,
+            snapshot: monitorState.presentation.snapshot,
             components: settings.menuBarComponents,
             order: settings.menuBarComponentOrder
         ))
@@ -103,7 +113,7 @@ struct MenuBarLabel: View {
                     .fixedSize(horizontal: true, vertical: false)
             }
             if settings.menuBarShowsGraph {
-                MenuBarSparkline(values: monitor.cpuHistory)
+                MenuBarSparkline(values: monitorState.presentation.cpuHistory)
             }
             if settings.menuBarShowsIcon {
                 Image(systemName: "gauge.with.dots.needle.50percent")
@@ -117,7 +127,7 @@ struct MenuBarLabel: View {
 
     private var accessibilityText: String {
         let metrics = MenuBarPresentation.accessibilityText(
-            snapshot: monitor.snapshot,
+            snapshot: monitorState.presentation.snapshot,
             components: settings.menuBarComponents,
             order: settings.menuBarComponentOrder
         )
@@ -131,56 +141,28 @@ private struct MenuBarSparkline: View {
     let values: [Double]
 
     var body: some View {
-        Image(nsImage: MenuBarSparklineRenderer.image(values: Array(values.suffix(30))))
-            .renderingMode(.template)
-            .resizable()
-            .interpolation(.high)
-            .frame(width: 28, height: 12)
-            .accessibilityHidden(true)
-    }
-}
-
-private enum MenuBarSparklineRenderer {
-    private static let size = NSSize(width: 28, height: 12)
-
-    static func image(values: [Double]) -> NSImage {
-        let image = NSImage(size: size, flipped: true) { bounds in
-            let points = normalizedPoints(values: values, in: bounds.size)
-            guard points.count > 1 else { return true }
-
-            let fill = NSBezierPath()
-            fill.move(to: NSPoint(x: points[0].x, y: bounds.height))
-            for point in points {
-                fill.line(to: point)
+        GeometryReader { geometry in
+            let points = normalizedPoints(in: geometry.size)
+            Path { path in
+                guard let first = points.first else { return }
+                path.move(to: first)
+                for point in points.dropFirst() {
+                    path.addLine(to: point)
+                }
             }
-            fill.line(to: NSPoint(x: points[points.count - 1].x, y: bounds.height))
-            fill.close()
-            NSColor.black.withAlphaComponent(0.22).setFill()
-            fill.fill()
-
-            let line = NSBezierPath()
-            line.move(to: points[0])
-            for point in points.dropFirst() {
-                line.line(to: point)
-            }
-            line.lineWidth = 1.5
-            line.lineJoinStyle = .round
-            line.lineCapStyle = .round
-            NSColor.black.setStroke()
-            line.stroke()
-            return true
+            .stroke(.primary, style: StrokeStyle(lineWidth: 1.5, lineJoin: .round))
         }
-        image.isTemplate = true
-        return image
+        .frame(width: 28, height: 12)
+        .accessibilityHidden(true)
     }
 
-    private static func normalizedPoints(values: [Double], in size: NSSize) -> [NSPoint] {
+    private func normalizedPoints(in size: CGSize) -> [CGPoint] {
         guard values.count > 1 else { return [] }
         return values.enumerated().map { index, value in
             let x = size.width * CGFloat(index) / CGFloat(values.count - 1)
             let normalized = min(1, max(0, value))
             let y = size.height * (1 - CGFloat(normalized))
-            return NSPoint(x: x, y: y)
+            return CGPoint(x: x, y: y)
         }
     }
 }
