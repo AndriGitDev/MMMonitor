@@ -36,11 +36,11 @@ MMMonitor calculates rates from counter differences. It does not inspect network
 
 The user chooses a one-, two-, or five-second main refresh interval. More expensive or slowly changing values are cached:
 
-- top processes: five seconds
+- top processes: five seconds while the dashboard is open; paused while it is closed
 - battery details: 30 seconds
 - disk and mounted-volume capacity: 60 seconds
 
-The optional menu-bar sparkline reuses existing in-memory CPU samples and creates no extra sampling work.
+The always-visible menu-bar label and the dashboard use separate observable presentation states. Closing the dashboard stops its layout updates and process enumeration while core sampling and alerts continue. The optional menu-bar sparkline reuses existing in-memory CPU samples and creates no extra sampling work.
 
 ## Storage
 

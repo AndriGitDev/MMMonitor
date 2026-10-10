@@ -22,12 +22,16 @@ final class SystemSampler {
     private var previousProcessTimes: [pid_t: UInt64] = [:]
     private var previousProcessSampleDate: Date?
     private var cachedTopProcesses: [ProcessSnapshot] = []
+    private var isProcessSamplingActive = false
     private var cachedDisk = DiskSample.empty
     private var previousDiskSampleDate: Date?
     private var cachedBattery = BatterySnapshot.unavailable
     private var previousBatterySampleDate: Date?
 
-    func sample(forceSlowMetrics: Bool = false) -> SystemSnapshot {
+    func sample(
+        forceSlowMetrics: Bool = false,
+        includeProcesses: Bool = true
+    ) -> SystemSnapshot {
         let now = Date()
         let cpu = sampleCPU()
         let memory = sampleMemory()
@@ -48,7 +52,7 @@ final class SystemSampler {
             uploadRate: network.upload,
             networkInterfaces: network.interfaces,
             battery: sampleBatteryIfNeeded(at: now, force: forceSlowMetrics),
-            topProcesses: sampleProcesses(at: now),
+            topProcesses: sampleProcessesIfRequested(includeProcesses, at: now),
             thermalLevel: sampleThermalLevel(),
             systemUptime: ProcessInfo.processInfo.systemUptime,
             loadAverages: sampleLoadAverages(),
@@ -430,6 +434,24 @@ final class SystemSampler {
             seenPIDs.insert($0.pid).inserted
         }
         return cachedTopProcesses
+    }
+
+    private func sampleProcessesIfRequested(
+        _ includeProcesses: Bool,
+        at now: Date
+    ) -> [ProcessSnapshot] {
+        guard includeProcesses else {
+            if isProcessSamplingActive {
+                previousProcessTimes = [:]
+                previousProcessSampleDate = nil
+                cachedTopProcesses = []
+                isProcessSamplingActive = false
+            }
+            return []
+        }
+
+        isProcessSamplingActive = true
+        return sampleProcesses(at: now)
     }
 
     private func processName(for pid: pid_t) -> String {
