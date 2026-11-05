@@ -120,7 +120,7 @@ struct MenuBarLabel: View {
             }
             metricText
         }
-        .help("MMMonitor — click for details")
+        .help("\(AppBrand.name) — \(AppBrand.attribution)\nClick for details")
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityText)
     }

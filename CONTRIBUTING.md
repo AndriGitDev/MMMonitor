@@ -1,6 +1,6 @@
 # Contributing to MMMonitor
 
-Thanks for helping make Apple Silicon diagnostics easier to understand.
+MMMonitor is a free community project by Kastro. Thanks for helping make Apple Silicon diagnostics easier to understand.
 
 ## Local setup
 
@@ -19,6 +19,8 @@ Use `swift run MMMonitor --open-settings` when working on settings. Before openi
 ```
 
 The app icon source is `Resources/AppIcon.png`. If it changes, regenerate its multi-resolution container with `swift scripts/build-icon.swift Resources/AppIcon.png Resources/AppIcon.icns`.
+
+Use **MMMonitor** as the product name and **A free community project by Kastro** as its attribution. Shared in-app copy lives in `Sources/MMMonitor/AppBrand.swift`; keep the README and bundle metadata consistent with it. Keep the existing metric colours meaningful and the menu-bar icon monochrome for macOS legibility.
 
 Release screenshots use representative demo metrics rather than local process or volume names. Regenerate them with `swift run MMMonitor --export-screenshots docs/images`.
 

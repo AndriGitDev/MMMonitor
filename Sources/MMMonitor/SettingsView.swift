@@ -26,12 +26,10 @@ struct SettingsView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 10) {
-                Image(systemName: "gauge.with.dots.needle.50percent")
-                    .font(.system(size: 24, weight: .medium))
-                    .foregroundStyle(.blue)
+                AppBrandIcon(size: 40)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text("MMMonitor Settings").font(.headline)
-                    Text("Changes are saved automatically").font(.caption).foregroundStyle(.secondary)
+                    Text("\(AppBrand.name) Settings").font(.headline)
+                    Text(AppBrand.attribution).font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer()
             }
@@ -60,11 +58,16 @@ struct SettingsView: View {
 
             Divider()
 
-            HStack {
-                Button("Copy Snapshot") { exportSnapshot(copyToClipboard: true) }
-                Button("Save Snapshot…") { exportSnapshot(copyToClipboard: false) }
-                Spacer()
-                Button("About") { showAboutPanel() }
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Button("Copy Snapshot") { exportSnapshot(copyToClipboard: true) }
+                    Button("Save Snapshot…") { exportSnapshot(copyToClipboard: false) }
+                    Spacer()
+                    Button("About") { showAboutPanel() }
+                }
+                Text("Free & open source · MIT License · Changes are saved automatically")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
             .padding(12)
         }
@@ -96,10 +99,10 @@ struct SettingsView: View {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString")
             as? String ?? "Development"
         NSApplication.shared.orderFrontStandardAboutPanel(options: [
-            .applicationName: "MMMonitor",
+            .applicationName: AppBrand.name,
             .applicationVersion: version,
             .credits: NSAttributedString(
-                string: "M-series Mac Monitor\nLocal, lightweight, and open source."
+                string: AppBrand.credits
             )
         ])
         NSApplication.shared.activate(ignoringOtherApps: true)

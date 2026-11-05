@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- presented MMMonitor as a free community project by Kastro across the dashboard, settings, About panel, menu-bar tooltip, bundle metadata, and project documentation
+- used the bundled app artwork in dashboard and settings headers, with a native-symbol fallback for development launches
+- included the MIT license in the app bundle and verified it during release packaging
 - stopped the closed dashboard from performing offscreen layout work on every sample
 - consolidated each view's metrics into one observable update per refresh
 - paused top-process enumeration while the dashboard is closed

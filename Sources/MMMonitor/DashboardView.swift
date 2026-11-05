@@ -63,14 +63,12 @@ struct DashboardView: View {
 
     private var header: some View {
         HStack(spacing: 10) {
-            Image(systemName: "gauge.with.dots.needle.50percent")
-                .font(.system(size: 22, weight: .medium))
-                .foregroundStyle(blue)
+            AppBrandIcon(size: 32)
 
             VStack(alignment: .leading, spacing: 1) {
-                Text("MMMonitor")
+                Text(AppBrand.name)
                     .font(.headline)
-                Text("M-series Mac Monitor")
+                Text(AppBrand.compactAttribution)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

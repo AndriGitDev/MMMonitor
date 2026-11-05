@@ -10,6 +10,7 @@ ICON_FILE="$APP_DIR/Contents/Resources/AppIcon.icns"
 test -d "$APP_DIR"
 test -x "$EXECUTABLE"
 test -f "$ICON_FILE"
+cmp "$PROJECT_DIR/LICENSE" "$APP_DIR/Contents/Resources/LICENSE"
 plutil -lint "$APP_DIR/Contents/Info.plist"
 codesign --verify --deep --strict --verbose=2 "$APP_DIR"
 
