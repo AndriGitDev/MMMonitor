@@ -6,6 +6,8 @@
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
 	<string>MMMonitor</string>
+	<key>CFBundleGetInfoString</key>
+	<string>MMMonitor — A free community project by Kastro</string>
 	<key>CFBundleExecutable</key>
 	<string>MMMonitor</string>
 	<key>CFBundleIconFile</key>

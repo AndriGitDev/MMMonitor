@@ -1,12 +1,16 @@
 <p align="center">
-  <img src="Resources/AppIcon.png" width="128" height="128" alt="MMMonitor app icon">
+  <img src="Resources/AppIcon.png" width="128" height="128" alt="MMMonitor — a free community project by Kastro">
 </p>
 
 # MMMonitor
 
-**M-series Mac Monitor** — Apple Silicon performance at a glance.
+**A free community project by Kastro**
+
+Apple Silicon performance at a glance.
 
 MMMonitor is a lightweight, native, open-source menu-bar system monitor for Apple Silicon Macs. It is local-only: no accounts, analytics, network services, or persistent privileged helper. Administrator approval is requested only when you explicitly flush the DNS cache.
+
+Part of Kastro's free community projects. Free to use, share, and modify under the [MIT License](LICENSE).
 
 For deployment or security review, see [Architecture and IT Review](docs/ARCHITECTURE.md).
 
@@ -44,6 +48,8 @@ For deployment or security review, see [Architecture and IT Review](docs/ARCHITE
 
 ## Screenshots
 
+These screenshots show the 0.5.0 interface, before the Kastro community branding pass.
+
 | Dashboard | Menu-bar configuration |
 | --- | --- |
 | <img src="docs/images/dashboard-dark.png" width="348" alt="MMMonitor dark-mode system dashboard"> | <img src="docs/images/menu-bar-settings.png" width="590" alt="MMMonitor menu-bar settings with presets and metric controls"> |
@@ -58,7 +64,7 @@ cd ~/MMMonitor
 open dist/MMMonitor.app
 ```
 
-The release build is ad-hoc signed and targets `arm64`. GitHub releases provide the same `.app` inside a downloadable archive. Users may need to approve locally downloaded, non-notarized applications according to their macOS or workplace security policy.
+The release build is ad-hoc signed and targets `arm64`. GitHub releases provide the same `.app` inside a downloadable archive. The app bundle includes the MIT license in `Contents/Resources/LICENSE`. Users may need to approve locally downloaded, non-notarized applications according to their macOS or workplace security policy.
 
 ## Install from a GitHub release
 
@@ -126,4 +132,4 @@ MMMonitor reads aggregate statistics from local macOS system APIs and does not t
 
 ## License
 
-MIT
+[MIT](LICENSE). MMMonitor is a free community project by Kastro, built with contributions from the community.

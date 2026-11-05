@@ -21,6 +21,7 @@ mkdir -p "$STAGED_APP/Contents/MacOS" "$STAGED_APP/Contents/Resources"
 cp "$PROJECT_DIR/.build/arm64-apple-macosx/release/MMMonitor" "$STAGED_APP/Contents/MacOS/MMMonitor"
 cp "$PROJECT_DIR/Resources/Info.plist" "$STAGED_APP/Contents/Info.plist"
 cp "$PROJECT_DIR/Resources/AppIcon.icns" "$STAGED_APP/Contents/Resources/AppIcon.icns"
+cp "$PROJECT_DIR/LICENSE" "$STAGED_APP/Contents/Resources/LICENSE"
 
 if command -v codesign >/dev/null 2>&1; then
     codesign --force --sign - "$STAGED_APP"
